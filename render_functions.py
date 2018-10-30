@@ -1,17 +1,27 @@
 import libtcodpy as libtcod
 
-def render_all(con, entities, game_map, screen_width, screen_height, colors):
-	#draw all tiles in the game_map
-	for y in range(game_map.height):
-		for x in range(game_map.width):
-			wall = game_map.tile[x][y].block_sight
-						
-			if wall:
-				libtcod.console_put_char_ex(con, x, y, '#', libtcod.white, libtcod.black)
+def render_all(con, entities, game_map, fov_map, fov_recompute, screen_width, screen_height, colors):
+	if fov_recompute:
+		for y in range(game_map.height):
+			for x in range(game_map.width):
+				visible = libtcod.map_is_in_fov(fov_map, x, y)
+				wall = game_map.tile[x][y].block_sight
 				
-			else:
-				libtcod.console_put_char_ex(con, x, y, '.', libtcod.white, libtcod.black)
-	
+				if visible:
+					if wall:
+						libtcod.console_put_char_ex(con, x, y, '#', libtcod.white, libtcod.black)
+					
+					else:
+						libtcod.console_put_char_ex(con, x, y, '.', libtcod.white, libtcod.black)
+				else:
+					if wall:
+						
+						libtcod.console_put_char_ex(con, x, y, '#', libtcod.grey, libtcod.black)
+					
+					else:
+						libtcod.console_put_char_ex(con, x, y, '.', libtcod.grey, libtcod.black)
+					
+					
 	#draw all entities in the list
 	for entity in entities:
 		draw_entity(con, entity)
