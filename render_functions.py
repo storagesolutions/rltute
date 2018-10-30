@@ -5,7 +5,7 @@ def render_all(con, entities, game_map, screen_width, screen_height, colors):
 	for y in range(game_map.height):
 		for x in range(game_map.width):
 			wall = game_map.tile[x][y].block_sight
-			
+						
 			if wall:
 				libtcod.console_put_char_ex(con, x, y, '#', libtcod.white, libtcod.black)
 				

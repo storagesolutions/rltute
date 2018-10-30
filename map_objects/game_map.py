@@ -11,6 +11,7 @@ class GameMap:
 		self.height = height
 		self.tile = self.initialize_tiles()
 		
+		
 	def initialize_tiles(self):
 		tiles = [[Tile(True) for y in range(self.height)] for x in range(self.width)]
 		
@@ -20,6 +21,7 @@ class GameMap:
 	
 		rooms = []
 		num_rooms = 0
+		
 		
 		for r in range(max_rooms):
 			#random width and height
@@ -43,6 +45,7 @@ class GameMap:
 				
 			#paint it to the map's tiles
 				self.create_room(new_room)
+				self.make_lumps(new_room)
 				
 			#center coordinates of new room, useful later
 				(new_x, new_y) = new_room.center()
@@ -74,8 +77,10 @@ class GameMap:
 				rooms.append(new_room)
 				num_rooms += 1
 					
+	
 		
-
+				
+			
 		
 	
 	def create_room(self, room):
@@ -97,8 +102,18 @@ class GameMap:
 			self.tile[x][y].blocked = False
 			self.tile[x][y].block_sight = False
 	
+	def make_lumps(self, room):
+		for x in range(room.x1 + 1, room.x2):
+			for y in range(room.y1 + 1, room.y2):
+					if randint(1, 7) == 1:	
+						self.tile[x][y].blocked = True
+						self.tile[x][y].block_sight = True
+				
+	
 	def is_blocked(self, x, y):
 		if self.tile[x][y].blocked:
 			return True
 			
 		return False
+		
+		
