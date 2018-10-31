@@ -26,12 +26,12 @@ def main():
 	
 	colors ={
 	
-		'dark_wall': libtcod.Color(0, 0, 100),
-		'dark_ground': libtcod.Color(50, 50, 150)
+		
+
 	}
 	
 	player = Entity(int(screen_width / 2), int(screen_height / 2), '@', libtcod.red)
-	npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2 -5), '@', libtcod.yellow)
+	npc = Entity(int(screen_width / 2 - 1), int(screen_height / 2 -1), '@', libtcod.yellow)
 	entities = [npc, player]
 	
 	
@@ -77,6 +77,7 @@ def main():
 		
 		if move:
 			dx, dy = move
+			
 			if not game_map.is_blocked(player.x + dx, player.y + dy):
 				player.move(dx, dy)
 				
