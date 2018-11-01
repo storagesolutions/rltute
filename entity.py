@@ -5,7 +5,8 @@ from render_functions import RenderOrder
 class Entity:
 #A generic object to represent players,enemies etc
 	
-	def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None):
+	def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, 
+					fighter=None, ai=None, item=None, inventory=None, block_sight = False):
 		self.x = x
 		self.y = y
 		self.char = char
@@ -15,12 +16,22 @@ class Entity:
 		self.render_order = render_order
 		self.fighter = fighter
 		self.ai = ai
+		self.item = item
+		self.inventory = inventory
+		self.block_sight = block_sight
+		
 		
 		if self.fighter:
 			self.fighter.owner = self
 			
 		if self.ai:
 			self.ai.owner = self
+			
+		if self.item:
+			self.item.owner = self
+			
+		if self.inventory:
+			self.inventory.owner = self
 		
 	def move(self, dx, dy):
 		#move the entity by a given amount
@@ -29,20 +40,19 @@ class Entity:
 	
 	
 	def move_towards(self, target_x, target_y, game_map, entities):
-	
 		dx = target_x - self.x
 		dy = target_y - self.y
 		distance = math.sqrt(dx ** 2 + dy ** 2)
-		
+
 		dx = int(round(dx / distance))
 		dy = int(round(dy / distance))
-	
+
 		if not (game_map.is_blocked(self.x + dx, self.y + dy) or
 					get_blocking_entities_at_location(entities, self.x + dx, self.y + dy)):
 			self.move(dx, dy)
 
 	def distance_to(self, other):
-		dx = other.x - self.y
+		dx = other.x - self.x
 		dy = other.y - self.y
 		return math.sqrt(dx ** 2 + dy ** 2)
 
@@ -82,8 +92,8 @@ class Entity:
 				self.x = x
 				self.y = y
 		else:
-				# Keep the old move function as a backup so that if there are no paths (for example another monster blocks a corridor)
-				# it will still try to move towards the player (closer to the corridor opening)
+			# Keep the old move function as a backup so that if there are no paths (for example another monster blocks a corridor)
+			# it will still try to move towards the player (closer to the corridor opening)
 			self.move_towards(target.x, target.y, game_map, entities)
 
 				# Delete the path to free memory
