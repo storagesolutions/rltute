@@ -1,7 +1,7 @@
 import libtcodpy as libtcod
 from death_functions import kill_monster, kill_player
 from components.fighter import Fighter
-from components.ai import BasicMonster, DrudgeMonster
+from components.ai import BasicMonster
 from components.inventory import Inventory
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
@@ -104,10 +104,12 @@ def main():
 		move = action.get('move')
 		pickup = action.get('pickup')
 		show_inventory = action.get('show_inventory')
+		drop_inventory = action.get('drop_inventory')
 		inventory_index = action.get('inventory_index')
 		exit = action.get('exit')
 		fullscreen = action.get('fullscreen')
-		
+		item_consumed = action.get('consumed')
+		item_dropped = action.get('dropped')
 		player_turn_results = []
 		
 		
@@ -148,14 +150,23 @@ def main():
 		if show_inventory:
 			previous_game_state = game_state
 			game_state = GameStates.SHOW_INVENTORY
+			
+		if drop_inventory:
+			previous_game_state = game_state
+			game_state = GameStates.DROP_INVENTORY
 		
 		if inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD and inventory_index < len(player.inventory.items):
 			
 			item = player.inventory.items[inventory_index]
-			print(item)
-		
-		if exit:
+			
 			if game_state == GameStates.SHOW_INVENTORY:
+				player_turn_results.extend(player.inventory.use(item))
+			elif game_state == GameStates.DROP_INVENTORY:
+				player_turn_results.extend(player.inventory.drop_item(item))
+			
+			
+		if exit:
+			if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
 				game_state = previous_game_state
 			else:	
 				return True
@@ -184,6 +195,15 @@ def main():
 				
 			if item_added:
 				entities.remove(item_added)
+				
+				game_state = GameStates.ENEMY_TURN
+			
+			if item_consumed:
+				
+				game_state = GameStates.ENEMY_TURN
+			
+			if item_dropped:
+				entities.append(item_dropped)
 				
 				game_state = GameStates.ENEMY_TURN
 			
