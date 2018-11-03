@@ -1,9 +1,10 @@
 import libtcodpy as libtcod
 from random import randint
 from components.fighter import Fighter
-from components.ai import BasicMonster,BlockingMonster
+from components.ai import BasicMonster,BlockingMonster,CunningMonster,WanderingMonster,CautiousMonster,StalkingMonster
 from components.item import Item
-from item_functions import heal
+from item_functions import heal, cast_blood, cast_virus, cast_mindworms
+from game_messages import Message
 from entity import Entity
 from render_functions import RenderOrder
 from map_objects.tile import Tile
@@ -80,7 +81,7 @@ class GameMap:
 						#first move verticall, then horzontally
 						self.create_v_tunnel(prev_y, new_y, new_x)
 						self.create_h_tunnel(prev_x, new_x, prev_y)
-				
+					
 
 				self.place_entities(new_room, entities, max_monsters_per_room, max_items_per_room)
 				#finally, append the new room to the list
@@ -115,7 +116,7 @@ class GameMap:
 	def make_lumps(self, room):
 		for x in range(room.x1 + 1, room.x2):
 			for y in range(room.y1 + 1, room.y2):
-					if randint(1, 4) == 1:	
+					if randint(1, 5) == 1:	
 						self.tiles[x][y].blocked = True
 						self.tiles[x][y].block_sight = True
 						
@@ -133,11 +134,47 @@ class GameMap:
 			
 			if not self.tiles[x][y].blocked:	
 				if not any([entity for entity in entities if entity.x == x and entity.y == y]):
-					if randint(0, 100) < 80:
-						fighter_component = Fighter(hp=10, defense=0, power=3)
-						ai_component = BasicMonster()
+					monster_chance = randint(1,100)	
+					if monster_chance <20:
+						fighter_component = Fighter(hp = 10, defense = 1, power = 0)
+						ai_component = BlockingMonster()
+						monster = Entity(x, y, '&', libtcod.light_red,'meat pile', blocks=True, fighter=fighter_component, ai=ai_component, block_sight=True)
+
+					elif monster_chance  < 30:
+						fighter_component = Fighter(hp=2, defense=0, power=2)
+						ai_component = WanderingMonster()
 					
 						monster = Entity(x, y, 'd', libtcod.purple, 'drudge', blocks=True, render_order = RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+
+
+					elif monster_chance  < 45:
+						fighter_component = Fighter(hp=8, defense=0, power=4)
+						ai_component = BasicMonster()
+					
+						monster = Entity(x, y, 'm', libtcod.lighter_crimson, 'maw', blocks=True, render_order = RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+					
+					elif monster_chance  < 55:
+						fighter_component = Fighter(hp=8, defense=1, power=3)
+						ai_component = CunningMonster()
+						
+						monster = Entity(x, y, 't', libtcod.turquoise, 'twitcher', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+					
+					elif monster_chance  < 70:
+						fighter_component = Fighter(hp=2, defense=0, power=2)
+						ai_component = CautiousMonster()
+					
+						monster = Entity(x, y, 'w', libtcod.gold, 'warper', blocks=True, render_order = RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+
+					
+					
+					elif monster_chance  < 85:
+						fighter_component = Fighter(hp=20, defense=0, power=10)
+						ai_component = StalkingMonster()
+					
+						monster = Entity(x, y, 'A', libtcod.purple, 'amputatrix', blocks=True, render_order = RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+					
+					
+
 					else:
 						fighter_component = Fighter(hp = 10, defense = 1, power = 0)
 						ai_component = BlockingMonster()
@@ -153,9 +190,28 @@ class GameMap:
 			
 			if not self.tiles[x][y].blocked:
 				if not any([entity for entity in entities if entity.x == x and entity.y == y]):
-					item_component = Item(use_function=heal, amount = 4)
-					item = Entity(x, y, '!', libtcod.celadon, 'Meat Chunk', render_order=RenderOrder.ITEM, item=item_component)
+					item_chance = randint(0,100)
+
+					if item_chance < 70:
+
+						item_component = Item(use_function=heal, amount = 4)
+						item = Entity(x, y, '!', libtcod.darker_amber, 'Meat Chunk', render_order=RenderOrder.ITEM, item=item_component)
 					
+					elif item_chance < 75:
+						
+						item_component = Item(use_function=cast_virus,targeting=True, targeting_message=Message(
+																				'Left click a target tile to unleash the virus, or right-click to cancel.', libtcod.celadon),
+																				damage=12, radius = 3)
+						item = Entity(x, y, '*', libtcod.celadon, 'Virus Cluster', render_order=RenderOrder.ITEM, item=item_component)
+					elif item_chance < 80:
+						item_component =Item(use_function=cast_mindworms, targeting=True, targeting_message=Message(
+									'Left click to fill a living being with burrowing worms, right click to cancel', libtcod.pink))
+						item = Entity(x, y, '*', libtcod.pink, 'Mind-Worm Nest', render_order=RenderOrder.ITEM, item=item_component)
+					
+					else:
+						item_component =Item(use_function=cast_blood, amount=4, damage = 20, maximum_range = 5)
+						item = Entity(x, y, ')', libtcod.crimson, 'Blood Extruder', render_order=RenderOrder.ITEM,
+													item=item_component)
 					entities.append(item)
 	
 	def is_blocked(self, x, y):
@@ -165,5 +221,3 @@ class GameMap:
 		return False
 	
 
-	
-		
